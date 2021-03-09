@@ -5,30 +5,30 @@ import json
 def get_comments(con, ticket_Id):
     cur = con.cursor()
     cur.execute("""
-select * from 
-(
-	select
-		 concat(title,' : ', note) 							                as body
-		,st.email											                          as author
-		,DATE_FORMAT(n.created, '%%Y-%%m-%%dT%%T.000+0000')     as  created
-	from
-		ost_ticket_note n left outer join
-		ost_staff st on st.staff_id = n.staff_id
-	where
-		n.ticket_id = %s
-	union all
-	select
-		 r.response											                        as body
-		,st.email											                          as author
-		,DATE_FORMAT(r.created, '%%Y-%%m-%%dT%%T.000+0000')     as created
-	from
-		ost_ticket_response r left outer join
-		ost_staff st on st.staff_id = r.staff_id
-	where
-		r.ticket_id = %s
-) as sub
-order by
-	sub.created asc
+        select * from 
+        (
+            select
+                concat(title,' : ', note) as body
+                ,st.email as author
+                ,DATE_FORMAT(n.created, '%%Y-%%m-%%dT%%T.000+0000') as  created
+            from
+                ost_ticket_note n left outer join
+                ost_staff st on st.staff_id = n.staff_id
+            where
+                n.ticket_id = %s
+            union all
+            select
+                r.response as body
+                ,st.email as author
+                ,DATE_FORMAT(r.created, '%%Y-%%m-%%dT%%T.000+0000') as created
+            from
+                ost_ticket_response r left outer join
+                ost_staff st on st.staff_id = r.staff_id
+            where
+                r.ticket_id = %s
+        ) as sub
+        order by
+            sub.created asc
 """, (ticket_Id, ticket_Id))    
 
     rows = cur.fetchall()
@@ -44,22 +44,22 @@ order by
 def get_issues(con):
     cur = con.cursor()
     cur.execute("""
-select 
-	  t.status 												                  as status
-	 ,p.priority											                  as priority
-	 ,t.subject												                  as summary
-	 ,m.message						        				              as description
-	 ,t.email												                    as reporter
-	 ,t.ticketID											                  as externalId
-	 ,st.email												                  as assignee
-	 ,DATE_FORMAT(t.created, '%Y-%m-%dT%T.000+0000')		as created
-from 
-	 ost_ticket t left outer join
-	 ost_ticket_priority p on p.priority_id = t.priority_id left outer join
-	 ost_ticket_message m on m.ticket_id = t.ticket_id left outer join
-	 ost_staff st on st.staff_id = t.staff_id
-order by
-	 t.created asc;""")
+            select 
+                t.status as status
+                ,p.priority as priority
+                ,t.subject as summary
+                ,m.message as description
+                ,t.email as reporter
+                ,t.ticketID as externalId
+                ,st.email as assignee
+                ,DATE_FORMAT(t.created, '%Y-%m-%dT%T.000+0000') as created
+            from 
+                ost_ticket t left outer join
+                ost_ticket_priority p on p.priority_id = t.priority_id left outer join
+                ost_ticket_message m on m.ticket_id = t.ticket_id left outer join
+                ost_staff st on st.staff_id = t.staff_id
+            order by
+                t.created asc;""")
 
     rows = cur.fetchall()
     result = ""
